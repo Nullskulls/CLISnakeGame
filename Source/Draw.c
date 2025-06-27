@@ -3,7 +3,8 @@
 
 
 void draw_game(const gameBoard* const gamestate) {
-    for (int i = 0; i < BOARD_COLS; i++) {
+    printf("Press \"ESC\" to exit!\n");
+    for (int i = 0; i < BOARD_COLS+2; i++) {
         printf("*");
     }
     printf("\n");
@@ -14,7 +15,8 @@ void draw_game(const gameBoard* const gamestate) {
         }
         printf("*\n");
     }
-    for (int i = 0; i < BOARD_COLS; i++) {
+    for (int i = 0; i < BOARD_COLS+2; i++) {
         printf("*");
     }
+    printf("\n");
 }

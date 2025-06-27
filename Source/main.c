@@ -1,16 +1,29 @@
 #include "Edit_Board.h"
-#include <stdio.h>
+#include "Draw.h"
+#include <stdlib.h>
+#include <time.h>
+#include <windows.h>
+#include "game.h"
 
 int main(void) {
-    gameBoard game = initializeBoard();
-
-    // Print the board for fun
-    for (int i = 0; i < BOARD_ROWS; i++) {
-        for (int j = 0; j < BOARD_COLS; j++) {
-            printf("%c", game.board[i][j]);
+    srand(time(NULL));
+    gameBoard gamestate = initializeBoard();
+    hide_cursor();
+    SetConsoleTitle("Snake..");
+    int key;
+    while (1){
+        key = get_input();
+        if (key == 5) {
+            exit(0);
         }
-        printf("\n");
-    }
+        int key_holder = key;
+        while (!kbhit()) {
+            set_new_pos(&gamestate, key_holder);
+            system("cls");
+            draw_game(&gamestate);
+            Sleep(150);
+        }
 
-    return 0;
+
+    }
 }
