@@ -28,4 +28,5 @@ gameBoard* initializeBoard(void);
 void wipe_board(gameBoard* gamestate);
 bool is_prev(const gameBoard* gamestate, const int* coords);
 
+#include "game.h"
 #endif

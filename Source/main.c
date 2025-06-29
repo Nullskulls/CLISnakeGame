@@ -18,7 +18,7 @@ int main(void) {
                 key = history;
             }
             draw_game(gamestate);
-            Sleep(7);
+            Sleep(50);
             printf("\033[H");
         }
     history = key;

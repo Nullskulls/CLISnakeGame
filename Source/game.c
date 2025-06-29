@@ -1,17 +1,27 @@
 #include "game.h"
-
+/*
+ Function used to exit properly freeing all dynamically allocated memory (assuming user doesn't alt f4 lol)
+ */
 void exiter(gameBoard* gamestate, char* text) {
+    //start by freeing coords of snake head
     free(gamestate->head);
-    for (int i = 0; i < BOARD_ROWS * BOARD_COLS; i++) {
-        free(gamestate->current);
-        free(gamestate->history);
-    }
+    //free current and history
+    free(gamestate->current);
+    free(gamestate->history);
+    //for row in board rows
     for (int i = 0; i < BOARD_ROWS; i++) {
+        //free columns in row
         free(gamestate->board[i]);
     }
+    //free rows in board
     free(gamestate->board);
+    //print message
+    system("cls");
     printf("%s", text);
+    //stop app so user can read
     Sleep(2000);
+    //exit with code 0
+    exit(0);
 }
 
 int get_input(gameBoard* gamestate){
