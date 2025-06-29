@@ -25,5 +25,7 @@ void fillBoard(const gameBoard* gamestate);
 int* random_cord(void);
 void setupBoard(gameBoard* gamestate);
 gameBoard* initializeBoard(void);
+void wipe_board(gameBoard* gamestate);
+bool is_prev(const gameBoard* gamestate, const int* coords);
 
 #endif

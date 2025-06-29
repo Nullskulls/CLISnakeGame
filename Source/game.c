@@ -10,6 +10,8 @@ void exiter(gameBoard* gamestate, char* text) {
         free(gamestate->board[i]);
     }
     free(gamestate->board);
+    printf("%s", text);
+    Sleep(2000);
 }
 
 int get_input(gameBoard* gamestate){
@@ -70,6 +72,8 @@ int is_valid_move(const gameBoard* gamestate, const int* coords) {
         return -1;
     }else if (0 > coords[0] || coords[0] >= 40 || 0 > coords[1] || coords[1] >= 40) {
         return 1;
+    }else if (is_prev(gamestate, coords) == true) {
+        return -2;
     }
     return 0;
 }
@@ -82,12 +86,12 @@ void change_history(const gameBoard* gamestate) {
 }
 
 void change_current(const gameBoard* gamestate) {
-    coords* holder = malloc(sizeof(coords)*gamestate->length);
+    coords* holder = malloc(sizeof(coords)*gamestate->length+1);
     if (holder  == NULL) {
         printf("Memory allocation error");
         exit(1);
     }
-    for (int i = 0; i < gamestate->length; i++) {
+    for (int i = 0; i < gamestate->length+1; i++) {
         holder[i].x = gamestate->current[i].x;
         holder[i].y = gamestate->current[i].y;
     }
@@ -102,13 +106,14 @@ void change_current(const gameBoard* gamestate) {
 }
 
 void change_board(const gameBoard* gamestate) {
+    fillBoard(gamestate);
     set_block(gamestate, gamestate->head[0], gamestate->head[1], '@');
-    for (int i = 0; i < gamestate->length; i++) {
-        set_block(gamestate, gamestate->current->x, gamestate->current->y, '#');
+    for (int i = 0; i < gamestate->length+1; i++) {
+        set_block(gamestate, gamestate->current[i].x, gamestate->current[i].y, '#');
     }
 }
 
-void move(gameBoard* gamestate, const char key) {
+int move(gameBoard* gamestate, const char key) {
     int* holder = malloc(sizeof(int)*2);
     if (holder == NULL) {
         printf("Memory allocation error");
@@ -141,11 +146,11 @@ void move(gameBoard* gamestate, const char key) {
         }
     }
     int validation = is_valid_move(gamestate, holder);
-    if (validation == -1) return;
-    else if (validation == 1 ) {
+    if (validation == 1 || validation == -1) {
         exiter(gamestate, "You lost.");
     }else if (validation == 0) {
         if (gamestate->board[holder[0]][holder[1]] == 'A') {
+            gamestate->length++;
             gamestate->apple_count--;
             place_apple(gamestate);
         }
@@ -153,7 +158,10 @@ void move(gameBoard* gamestate, const char key) {
         change_current(gamestate);
         gamestate->head[0] = holder[0];
         gamestate->head[1] = holder[1];
+    } else if (validation == -2) {
+        return -1;
     }
     free(holder);
     change_board(gamestate);
+    return 0;
 }

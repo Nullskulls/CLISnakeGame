@@ -2,6 +2,9 @@
 #include <stdlib.h>
 #include "Edit_Board.h"
 
+#include "Draw.h"
+#include "game.h"
+
 int set_block(const gameBoard* gamestate, int row, int col, char block) {
     if (row < BOARD_ROWS && col < BOARD_COLS && (gamestate->board[row][col] == ' ' || gamestate->board[row][col] == 'A')) {
         gamestate->board[row][col] = block;
@@ -19,8 +22,15 @@ void fillBoard(const gameBoard* gamestate) {
     }
 }
 
+bool is_prev(const gameBoard* gamestate, const int* coords) {
+    if (coords[0] == gamestate->current[0].x && coords[1] == gamestate->current[0].y) {
+        return true;
+    }
+    return false;
+}
+
 bool is_snake(const gameBoard* gamestate, const int* coords) {
-    for (int i = 0; i < gamestate->length+1; i++) {
+    for (int i = 1; i < gamestate->length+1; i++) {
         if (gamestate->head[0] == coords[0] && gamestate->head[1] == coords[1]) {
             return true;
         } else if (gamestate->current[i].x == coords[0] && gamestate->current[i].y == coords[1]) {
@@ -39,9 +49,19 @@ void place_apple(gameBoard* gamestate) {
     }
     gamestate->board[apple_cords[0]][apple_cords[1]] = 'A';
     free(apple_cords);
-
+    if (gamestate->apple_count < gamestate->length) {
+        place_apple(gamestate);
+        printf("%i", gamestate->apple_count);
+    }
 }
 
+void wipe_board(gameBoard* gamestate) {
+    for (int i = 0; i < BOARD_ROWS; i++) {
+        for (int j = 0; j < BOARD_COLS; j++) {
+            gamestate->board[i][j] = ' ';
+        }
+    }
+}
 
 int* random_cord(void) {
     int* cords = malloc(sizeof(int) * 2);
@@ -56,9 +76,10 @@ int* random_cord(void) {
 
 void setupBoard(gameBoard* gamestate) {
     gamestate->head = random_cord();
-    fillBoard(gamestate);
+    wipe_board(gamestate);
     gamestate->board[gamestate->head[0]][gamestate->head[1]] = '@';
     gamestate->length = 0;
+    gamestate->apple_count = 0;
     place_apple(gamestate);
 }
 
@@ -87,7 +108,6 @@ gameBoard* initializeBoard(void) {
         gamestate->current[i].y--;
         gamestate->current[i].x--;
     }
-
     gamestate->board = board;
     setupBoard(gamestate);
     return gamestate;

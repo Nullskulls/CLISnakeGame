@@ -10,7 +10,7 @@
 int get_input(gameBoard* gamestate);
 void hide_cursor(void);
 int get_input_blocking(void);
-void move(gameBoard* gamestate, const char key);
+int move(gameBoard* gamestate, const char key);
 void change_board(const gameBoard* gamestate);
 void change_current(const gameBoard* gamestate);
 int is_valid_move(const gameBoard* gamestate, const int* coords);
