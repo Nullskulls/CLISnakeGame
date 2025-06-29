@@ -1,6 +1,18 @@
 #include "game.h"
 
-int get_input(void){
+void exiter(gameBoard* gamestate, char* text) {
+    free(gamestate->head);
+    for (int i = 0; i < BOARD_ROWS * BOARD_COLS; i++) {
+        free(gamestate->current);
+        free(gamestate->history);
+    }
+    for (int i = 0; i < BOARD_ROWS; i++) {
+        free(gamestate->board[i]);
+    }
+    free(gamestate->board);
+}
+
+int get_input(gameBoard* gamestate){
     if (kbhit()) {
         char key = getch();
         switch (key) {
@@ -8,117 +20,25 @@ int get_input(void){
             case 'a': return 2;
             case 's': return 3;
             case 'd': return 4;
-            case 27: return 5;
+            case 27: {
+                printf("Exiting...\n");
+                free(gamestate->head);
+                for (int i = 0; i < BOARD_ROWS * BOARD_COLS; i++) {
+                    free(gamestate->current);
+                    free(gamestate->history);
+                }
+                for (int i = 0; i < BOARD_ROWS; i++) {
+                    free(gamestate->board[i]);
+                }
+                free(gamestate->board);
+                exit(0);
+            }
             default: return 0;
         }
     }
     return 0;
 }
 
-bool is_valid(char key, const gameBoard* const gamestate) {
-    int* head = gamestate->head;
-    int new_pos[2];
-    switch (key) {
-        case 1: {
-            new_pos[0] = head[0]-1;
-            new_pos[1] = head[1];
-            break;
-        }
-            case 2: {
-            new_pos[0] = head[0];
-            new_pos[1] = head[1]-1;
-            break;
-        }
-            case 3: {
-            new_pos[0] = head[0]+1;
-            new_pos[1] = head[1];
-            break;
-        }
-            case 4: {
-            new_pos[0] = head[0];
-            new_pos[1] = head[1]+1;
-            break;
-        }
-            default: {
-            return false;
-        }
-    }
-    if (new_pos[0] >= 20 || new_pos[1] >= 40) {
-        return false;
-    }
-    for (int i = 0; i < gamestate->length; i++) {
-        if (gamestate->current[i].x == -1) {
-            return true;
-        }
-        if (gamestate->current[i].x == new_pos[0] && gamestate->current[i].y == new_pos[1]) {
-            return false;
-        }
-    }
-    return true;
-}
-
-
-void set_new_pos(gameBoard* gamestate, char key) {
-    if (is_valid(key, gamestate)) {
-        int* head = gamestate->head;
-        int new_pos[2];
-        switch (key) {
-            case 1: {
-                new_pos[0] = head[0]-1;
-                new_pos[1] = head[1];
-                break;
-            }
-            case 2: {
-                new_pos[0] = head[0];
-                new_pos[1] = head[1]-1;
-                break;
-            }
-            case 3: {
-                new_pos[0] = head[0]+1;
-                new_pos[1] = head[1];
-                break;
-            }
-            case 4: {
-                new_pos[0] = head[0];
-                new_pos[1] = head[1]+1;
-                break;
-            }
-            default: {
-
-            }
-        }
-        if (gamestate->board[new_pos[0]][new_pos[1]] == 'A') {
-            int* apple_coords = random_cord();
-            set_block(gamestate, apple_coords[0], apple_coords[1], 'A');
-            free (apple_coords);
-        }
-        gamestate->history[0].x = gamestate->head[0];
-        gamestate->history[0].y = gamestate->head[1];
-        for (int i = 1; i < gamestate->length; i++) {
-            gamestate->history[i].x = gamestate->current[i-1].x;
-            gamestate->history[i].y = gamestate->current[i-1].y;
-        }
-        coords* holder = malloc(sizeof(coords)*gamestate->length);
-        for (int i = 0; i < gamestate->length; i++) {
-            holder[i].x = gamestate->current[i].x;
-            holder[i].y = gamestate->current[i].y;
-        }
-        gamestate->current[0].x = head[0];
-        gamestate->current[0].y = head[1];
-        for (int i = 1; i < gamestate->length; i++) {
-            gamestate->current[i].x = holder[i-1].x;
-            gamestate->current[i].y = holder[i-1].y;
-        }
-        gamestate->head[0] = new_pos[0];
-        gamestate->head[1] = new_pos[1];
-        free(holder);
-        fillBoard(gamestate);
-        set_block(gamestate, gamestate->head[0], gamestate->head[1], '@');
-        for (int i = 0; i < gamestate->length; i++) {
-            set_block(gamestate, gamestate->current[i].x, gamestate->current[i].y, '=');
-        }
-    }
-}
 
 
 void hide_cursor(void) {
@@ -130,19 +50,110 @@ void hide_cursor(void) {
     SetConsoleCursorInfo(consoleHandle, &cursorInfo);
 }
 
-#include <stdio.h>
 
 int get_input_blocking(void) {
-    char key;
     printf("Enter direction (w/a/s/d or ESC to quit): ");
-    key = getchar();
+    char key = getchar();
 
     switch (key) {
         case 'w': return 1;
         case 'a': return 2;
         case 's': return 3;
         case 'd': return 4;
-        case 27:  return 5;  // ESC (won’t actually work in this mode unless raw)
+        case 27:  return 5;
         default: return 0;
     }
+}
+
+int is_valid_move(const gameBoard* gamestate, const int* coords) {
+    if (is_snake(gamestate, coords)) {
+        return -1;
+    }else if (0 > coords[0] || coords[0] >= 40 || 0 > coords[1] || coords[1] >= 40) {
+        return 1;
+    }
+    return 0;
+}
+
+void change_history(const gameBoard* gamestate) {
+    for (int i = 0; i < gamestate->length; i++) {
+        gamestate->history[i].x = gamestate->current[i].x;
+        gamestate->history[i].y = gamestate->current[i].y;
+    }
+}
+
+void change_current(const gameBoard* gamestate) {
+    coords* holder = malloc(sizeof(coords)*gamestate->length);
+    if (holder  == NULL) {
+        printf("Memory allocation error");
+        exit(1);
+    }
+    for (int i = 0; i < gamestate->length; i++) {
+        holder[i].x = gamestate->current[i].x;
+        holder[i].y = gamestate->current[i].y;
+    }
+    gamestate->current[0].x = gamestate->head[0];
+    gamestate->current[0].y = gamestate->head[1];
+    for (int i = 1; i < gamestate->length+1; i++) {
+        gamestate->current[i].x = holder[i-1].x;
+        gamestate->current[i].y = holder[i-1].y;
+    }
+    free(holder);
+
+}
+
+void change_board(const gameBoard* gamestate) {
+    set_block(gamestate, gamestate->head[0], gamestate->head[1], '@');
+    for (int i = 0; i < gamestate->length; i++) {
+        set_block(gamestate, gamestate->current->x, gamestate->current->y, '#');
+    }
+}
+
+void move(gameBoard* gamestate, const char key) {
+    int* holder = malloc(sizeof(int)*2);
+    if (holder == NULL) {
+        printf("Memory allocation error");
+        exit(1);
+    }
+    switch (key) {
+        case 1: {
+            holder[0] = gamestate->head[0]-1;
+            holder[1] = gamestate->head[1];
+            break;
+        }
+            case 2: {
+            holder[0] = gamestate->head[0];
+            holder[1] = gamestate->head[1]-1;
+            break;
+        }
+            case 3: {
+            holder[0] = gamestate->head[0]+1;
+            holder[1] = gamestate->head[1];
+            break;
+        }
+            case 4: {
+            holder[0] = gamestate->head[0];
+            holder[1] = gamestate->head[1]+1;
+            break;
+        }
+        default: {
+            free(holder);
+            return;
+        }
+    }
+    int validation = is_valid_move(gamestate, holder);
+    if (validation == -1) return;
+    else if (validation == 1 ) {
+        exiter(gamestate, "You lost.");
+    }else if (validation == 0) {
+        if (gamestate->board[holder[0]][holder[1]] == 'A') {
+            gamestate->apple_count--;
+            place_apple(gamestate);
+        }
+        change_history(gamestate);
+        change_current(gamestate);
+        gamestate->head[0] = holder[0];
+        gamestate->head[1] = holder[1];
+    }
+    free(holder);
+    change_board(gamestate);
 }

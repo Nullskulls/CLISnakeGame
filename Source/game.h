@@ -5,11 +5,16 @@
 #include <stdio.h>
 #include <conio.h>
 #include <Windows.h>
+#include <stdio.h>
 
-void set_new_pos(gameBoard* gamestate, char key);
-bool is_valid(char key, const gameBoard* const gamestate);
-int get_input(void);
+int get_input(gameBoard* gamestate);
 void hide_cursor(void);
 int get_input_blocking(void);
+void move(gameBoard* gamestate, const char key);
+void change_board(const gameBoard* gamestate);
+void change_current(const gameBoard* gamestate);
+int is_valid_move(const gameBoard* gamestate, const int* coords);
+void exiter(gameBoard* gamestate, char* text);
+
 
 #endif //GAME_H
