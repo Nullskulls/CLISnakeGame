@@ -86,11 +86,6 @@ void place_apple(gameBoard* gamestate) {
     gamestate->board[apple_cords[0]][apple_cords[1]] = 'A';
     //free the coords cuz memory leak
     free(apple_cords);
-    //if ratio of apples isn't 1:1 place more lol
-    if (gamestate->apple_count < gamestate->length) {
-        //call place apple
-        place_apple(gamestate);
-    }
 }
 
 /*
@@ -177,14 +172,6 @@ gameBoard* initializeBoard(void) {
             //exit with code 1
             exit(1);
         }
-    }
-    //allocate non garbage value filled memory with calloc
-    gamestate->history = calloc(BOARD_ROWS * BOARD_COLS, sizeof(coords));
-    //for index in history
-    for (int i = 0; i < BOARD_ROWS * BOARD_COLS; i++) {
-        //decrease x,y by one (to become {-1, -1} used as empty/NULL)
-        gamestate->history[i].y--;
-        gamestate->history[i].x--;
     }
     //allocate clean memory for current
     gamestate->current = calloc(BOARD_ROWS * BOARD_COLS, sizeof(coords));

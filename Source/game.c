@@ -7,7 +7,6 @@ void exiter(gameBoard* gamestate, char* text) {
     free(gamestate->head);
     //free current and history
     free(gamestate->current);
-    free(gamestate->history);
     //for row in board rows
     for (int i = 0; i < BOARD_ROWS; i++) {
         //free columns in row
@@ -37,7 +36,6 @@ int get_input(gameBoard* gamestate){
                 free(gamestate->head);
                 for (int i = 0; i < BOARD_ROWS * BOARD_COLS; i++) {
                     free(gamestate->current);
-                    free(gamestate->history);
                 }
                 for (int i = 0; i < BOARD_ROWS; i++) {
                     free(gamestate->board[i]);
@@ -86,13 +84,6 @@ int is_valid_move(const gameBoard* gamestate, const int* coords) {
         return -2;
     }
     return 0;
-}
-
-void change_history(const gameBoard* gamestate) {
-    for (int i = 0; i < gamestate->length; i++) {
-        gamestate->history[i].x = gamestate->current[i].x;
-        gamestate->history[i].y = gamestate->current[i].y;
-    }
 }
 
 void change_current(const gameBoard* gamestate) {
@@ -164,7 +155,6 @@ int move(gameBoard* gamestate, const char key) {
             gamestate->apple_count--;
             place_apple(gamestate);
         }
-        change_history(gamestate);
         change_current(gamestate);
         gamestate->head[0] = holder[0];
         gamestate->head[1] = holder[1];

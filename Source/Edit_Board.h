@@ -14,7 +14,6 @@ typedef struct {
     int apple_count;
     char** board;
     int length;
-    coords* history;
     coords* current;
 } gameBoard;
 
