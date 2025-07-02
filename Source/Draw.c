@@ -31,4 +31,5 @@ void draw_game(const gameBoard* const gamestate) {
         printf("*");
     }
     printf("\n");
+    printf("Use WASD to move. \n");
 }
